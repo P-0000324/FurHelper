@@ -1,9 +1,9 @@
 """
 --==P0000324 Coding==--
 FurHelper 0.1.0039
-26.03.21
+26.05.02
 ========
-1)
+1)Fixed a bug in onlineSearch, which asks user the permisson wrongly on normal UAC settings.
 """
 
 from tkinter import *
@@ -27,7 +27,7 @@ appSettings = {
     "ver" : "0.1.0039",
     "versionTag" : "Beta",
     "releaseTips" : "A furry that helps you!",
-    "relDate" : "26.03.21",
+    "relDate" : "26.05.02",
     "firstRelDate" : "25.06.24",
     "firstRelTime" : "11:02",
     "betaTags" : [
@@ -407,7 +407,7 @@ class Furry():
                 os.system(cmdAssets)
             allow = False
             #print(self.userCfgData['advancedData']['UACLevel'])
-            if (self.userCfgData['advancedData']['UACLevel'] > 0 and checkAdminID(ID = adminID) == False) or (self.userCfgData['advancedData']['UACLevel'] >= 3) :
+            if (self.userCfgData['advancedData']['UACLevel'] > 0 and checkAdminID(ID = adminID) == False) or (self.userCfgData['advancedData']['UACLevel'] >= 4) :
                 #if self.self.userCfgData['advancedData']['UACLevel'] <= 4 :
                 #    default_ = 'yes'
                 #else :
@@ -415,7 +415,7 @@ class Furry():
                 default_ = 'no'
                 allow = messagebox.askyesno(self.loadCurrentLang(key = 'messageTitleUAC'), self.loadCurrentLang(key = 'messageUAC').format(s = cmdAssets), default = default_)
                 #print(ans, type(ans))
-            elif (self.userCfgData['advancedData']['UACLevel'] == 0) or (checkAdminID(ID = adminID) == True and self.userCfgData['advancedData']['UACLevel'] < 3) :
+            elif (self.userCfgData['advancedData']['UACLevel'] == 0) or (checkAdminID(ID = adminID) == True and self.userCfgData['advancedData']['UACLevel'] < 4) :
                 allow = True
                 if self.userCfgData['advancedData']['UACLevel'] >= 2 :
                     self.furryStray.notify(self.loadCurrentLang(key = 'messageTitleUAC2'), self.loadCurrentLang(key = 'messageUAC2').format(s = cmdAssets))
