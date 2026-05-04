@@ -1,9 +1,9 @@
 """
 --==P0000324 Coding==--
-FurHelper 0.1.0039
-26.05.02
+FurHelper 0.1.0041
+26.05.04
 ========
-1)Fixed a bug in onlineSearch, which asks user the permisson wrongly on normal UAC settings.
+1)Emergency repair build: fixed an error in UAC module.
 """
 
 from tkinter import *
@@ -20,14 +20,15 @@ import random
 import platform
 import time
 import traceback
+import webbrowser
 
 appSettings = {
     "appName" : "FurHelper",
     "verName" : "GoldEarBay",
-    "ver" : "0.1.0039",
+    "ver" : "0.1.0041",
     "versionTag" : "Beta",
     "releaseTips" : "A furry that helps you!",
-    "relDate" : "26.05.02",
+    "relDate" : "26.05.04",
     "firstRelDate" : "25.06.24",
     "firstRelTime" : "11:02",
     "betaTags" : [
@@ -367,12 +368,28 @@ class Furry():
         self.saveUserData()
         self.noteBoardWindow.withdraw()
 
+    def appUAC_checkAdminID(self, ID = -1):
+        if (ID > (64 ** 2)) and (ID % 324 == 0) and (ID % 2147 == 324) and (mode == 'shell') :
+            return True
+        else :
+            return False
+
+    def appUAC_askForPermission(self, maxiumPassLevel = 3, miniumNotifactionLevel = 2, adminID = -1, cmdAssets = 'debug'):
+        print(self.userCfgData['advancedData']['UACLevel'], self.appUAC_checkAdminID(ID = adminID), self.userCfgData['advancedData']['UACLevel'])
+        if (self.userCfgData['advancedData']['UACLevel'] > 0 and self.appUAC_checkAdminID(ID = adminID) == False) and (self.userCfgData['advancedData']['UACLevel'] >= maxiumPassLevel) :
+            default_ = 'no'
+            allow = messagebox.askyesno(self.loadCurrentLang(key = 'messageTitleUAC'), self.loadCurrentLang(key = 'messageUAC').format(s = cmdAssets), default = default_)
+        elif self.appUAC_checkAdminID(ID = adminID) == True or self.userCfgData['advancedData']['UACLevel'] < maxiumPassLevel :
+            allow = True
+            if self.userCfgData['advancedData']['UACLevel'] >= miniumNotifactionLevel :
+                self.furryStray.notify(self.loadCurrentLang(key = 'messageTitleUAC2'), self.loadCurrentLang(key = 'messageUAC2').format(s = cmdAssets))
+        else :
+            self.shellOutput(text = '[X]Invalid state {s}.Will change it to 0.'.format(s = self.userCfgData['advancedData']['UACLevel']).format(s = cmdAssets))
+            self.userCfgData['advancedData']['UACLevel'] = 0
+            allow = messagebox.askyesno(self.loadCurrentLang(key = 'messageTitleUAC'), self.loadCurrentLang(key = 'messageUAC'))
+        return allow
+
     def debugCommand(self, cmd = 'echo Hello World!', mode = 'shell', ignoreErrs = False, outputWithGUI = False, adminID = -1):
-        def checkAdminID(ID = -1):
-            if (ID > (64 ** 2)) and (ID % 324 == 0) and (ID % 2147 == 324) and (mode == 'shell') :
-                return True
-            else :
-                return False
         def output(data = 'DEBUG', forceShell = False, toLog = False):
             if outputWithGUI == True and forceShell == False :
                 self.shellOutput(data, withGUI = True)
@@ -405,27 +422,17 @@ class Furry():
         elif cmdMain in ['syscmd', 'sysdebug'] :
             def runCmd(arg1 = None):
                 os.system(cmdAssets)
-            allow = False
-            #print(self.userCfgData['advancedData']['UACLevel'])
-            if (self.userCfgData['advancedData']['UACLevel'] > 0 and checkAdminID(ID = adminID) == False) or (self.userCfgData['advancedData']['UACLevel'] >= 4) :
-                #if self.self.userCfgData['advancedData']['UACLevel'] <= 4 :
-                #    default_ = 'yes'
-                #else :
-                #    default_ = 'no'
-                default_ = 'no'
-                allow = messagebox.askyesno(self.loadCurrentLang(key = 'messageTitleUAC'), self.loadCurrentLang(key = 'messageUAC').format(s = cmdAssets), default = default_)
-                #print(ans, type(ans))
-            elif (self.userCfgData['advancedData']['UACLevel'] == 0) or (checkAdminID(ID = adminID) == True and self.userCfgData['advancedData']['UACLevel'] < 4) :
-                allow = True
-                if self.userCfgData['advancedData']['UACLevel'] >= 2 :
-                    self.furryStray.notify(self.loadCurrentLang(key = 'messageTitleUAC2'), self.loadCurrentLang(key = 'messageUAC2').format(s = cmdAssets))
-            else :
-                output(data = '[X]Invalid state {s}.Will change it to 0.'.format(s = self.userCfgData['advancedData']['UACLevel']).format(s = cmdAssets), forceShell = True)
-                self.userCfgData['advancedData']['UACLevel'] = 0
-                ans = messagebox.askyesno(self.loadCurrentLang(key = 'messageTitleUAC'), self.loadCurrentLang(key = 'messageUAC'))
+            allow = self.appUAC_askForPermission(cmdAssets = cmdAssets)
             if allow == True :
                 threading.Thread(target = runCmd).start()
                 output(data = '[i]Command Prompt Loaded: {cmd}'.format(cmd = cmdAssets), forceShell = True)
+        elif cmdMain in ['syswebapi'] :
+            def runCmd(arg1 = None):
+                webbrowser.open(cmdAssets)
+            allow = self.appUAC_askForPermission(cmdAssets = cmdAssets)
+            if allow == True :
+                threading.Thread(target = runCmd).start()
+                output(data = '[i]Opened page: {cmd}'.format(cmd = cmdAssets), forceShell = True)
         elif cmdMain in ['pass'] :
             output(data = '[i]Pass!')
         elif cmdMain in ['doNothing', 'doNothing'] :
@@ -521,7 +528,13 @@ class Furry():
             fe.write(poem)
 
     def onlineSearchWindow(self):
-        pass
+        searchTag = simpledialog.askstring(self.loadCurrentLang(key = 'menuOnlineSearchTitle'), self.loadCurrentLang(key = 'menuOnlineSearch'), parent = self.tmpWindow)
+        if searchTag == None or searchTag == '' :
+            return 0
+        if searchTag[0] in ['/', '\\'] :
+            self.debugCommand(cmd = searchTag[1:], mode = 'shell', outputWithGUI = True)
+        else :
+            self.onlineSearch(searchTag = searchTag)
 
     def onlineSearch(self, searchTag = 'SS4'):
         def work(text = 'DEBUG'):
@@ -558,20 +571,17 @@ class Furry():
                     txt1[x] = table[txt1[x]]
             txt1 = ''.join(txt1)
             return txt1
-        searchTag = simpledialog.askstring(self.loadCurrentLang(key = 'menuOnlineSearchTitle'), self.loadCurrentLang(key = 'menuOnlineSearch'), parent = self.tmpWindow)
-        if searchTag == None or searchTag == '' :
-            return 0
-        if searchTag[0] in ['/', '\\'] :
-            self.debugCommand(cmd = searchTag[1:], mode = 'shell', outputWithGUI = True)
-        else :
-            searchAdd1 = self.onlineSearchAddress.format(s = work(text = searchTag))
-            cmd = 'syscmd start {add}'.format(add = searchAdd1)
-            try :
-                if self.userCfgData['onlineServiceData']['searchAssetsAppendix'] == True :
-                    cmd = ' '.join([cmd, self.userCfgData['onlineServiceData']['searchAppendixData']])
-            except :
-                pass
-            self.debugCommand(cmd = cmd, adminID = 40346748)
+        
+        searchAdd1 = self.onlineSearchAddress.format(s = work(text = searchTag))
+        try :
+            if self.userCfgData['onlineServiceData']['searchAssetsAppendix'] == True :
+                searchAdd1 = ' '.join([searchAdd1, self.userCfgData['onlineServiceData']['searchAppendixData']])
+        except :
+            pass
+        #print(searchAdd1)
+        permission = self.appUAC_askForPermission(maxiumPassLevel = 5, miniumNotifactionLevel = 5, cmdAssets = searchAdd1)
+        if permission == True :
+            webbrowser.open(searchAdd1)
 
     def onMainWindowMove(self, arg1 = None):
         if (self.userCfgData['featureData']['savedMainWindowPos']['x'] != self.mainWindow.winfo_x() or self.userCfgData['featureData']['savedMainWindowPos']['y'] != self.mainWindow.winfo_y()) and (self.menuPopup == True) :
@@ -1098,7 +1108,7 @@ class Furry():
         self.popupMenuWindow.title(self.menuTitle)
 
         self.menu_titleLabel = Label(self.popupMenuWindow, text = self.loadCurrentLang(key = 'menuTitle1'), bg = 'yellow', wraplength = int((self.menuWidth - 2 * sideMove)))
-        self.menu_searchBtn = Button(self.popupMenuWindow, text = self.addSign(text = self.loadCurrentLang(key = 'menuOnlineSearchBtn'), sign = 'enter'), command = self.onlineSearch)
+        self.menu_searchBtn = Button(self.popupMenuWindow, text = self.addSign(text = self.loadCurrentLang(key = 'menuOnlineSearchBtn'), sign = 'enter'), command = self.onlineSearchWindow)
         self.menu_versionTag = Label(self.popupMenuWindow, text = self.getLang(text = '{appName} {appVer}', mode = 'text'))
         self.menu_separator = ttk.Separator(self.popupMenuWindow)
         self.menu_separator1 = ttk.Separator(self.popupMenuWindow)
