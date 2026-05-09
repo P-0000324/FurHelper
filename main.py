@@ -1,9 +1,11 @@
 """
 --==P0000324 Coding==--
-FurHelper 0.1.0041
-26.05.04
+FurHelper 0.1.0042
+26.05.09
 ========
-1)Emergency repair build: fixed an error in UAC module.
+1)Appended a button that shows when the menu list is empty.
+2)The remove command button window will no longer ask the user for permission when user selects nothing now.
+3)...?
 """
 
 from tkinter import *
@@ -25,10 +27,10 @@ import webbrowser
 appSettings = {
     "appName" : "FurHelper",
     "verName" : "GoldEarBay",
-    "ver" : "0.1.0041",
+    "ver" : "0.1.0042",
     "versionTag" : "Beta",
     "releaseTips" : "A furry that helps you!",
-    "relDate" : "26.05.04",
+    "relDate" : "26.05.09",
     "firstRelDate" : "25.06.24",
     "firstRelTime" : "11:02",
     "betaTags" : [
@@ -196,13 +198,20 @@ class Furry():
     def aboutApp(self, arg1 = None) :
         txt = self.loadCurrentLang(key = 'messageAbout', popEmptyLines = True)
         superSecret1 = False #...?
+        superSecret2 = False
         if time.strftime('%m%d') == '0401' and random.randint(301, 400) == 324 :
             superSecret1 = True
+        if time.strftime('%m%d') == '0528' :
+            superSecret2 = True
         if superSecret1 == True :
             txt = txt.split('\n')
             for x in range(len(txt)):
                 txt[x] = '\u202e' + txt[x]
             txt.append('\n[!]Aha! April fool!:)')
+            txt = '\n'.join(txt)
+        if superSecret2 == True :
+            txt = txt.split('\n')
+            txt.append('\n[\\n-n/ Happy birthday, P0000324!]')
             txt = '\n'.join(txt)
         messagebox.showinfo(self.loadCurrentLang(key = 'messageTitleAbout'), txt)
 
@@ -375,7 +384,7 @@ class Furry():
             return False
 
     def appUAC_askForPermission(self, maxiumPassLevel = 3, miniumNotifactionLevel = 2, adminID = -1, cmdAssets = 'debug'):
-        print(self.userCfgData['advancedData']['UACLevel'], self.appUAC_checkAdminID(ID = adminID), self.userCfgData['advancedData']['UACLevel'])
+        self.shellOutput(('[i]UAC: The settings now is ' + str([self.userCfgData['advancedData']['UACLevel'], self.appUAC_checkAdminID(ID = adminID), self.userCfgData['advancedData']['UACLevel']])))
         if (self.userCfgData['advancedData']['UACLevel'] > 0 and self.appUAC_checkAdminID(ID = adminID) == False) and (self.userCfgData['advancedData']['UACLevel'] >= maxiumPassLevel) :
             default_ = 'no'
             allow = messagebox.askyesno(self.loadCurrentLang(key = 'messageTitleUAC'), self.loadCurrentLang(key = 'messageUAC').format(s = cmdAssets), default = default_)
@@ -582,6 +591,7 @@ class Furry():
         permission = self.appUAC_askForPermission(maxiumPassLevel = 5, miniumNotifactionLevel = 5, cmdAssets = searchAdd1)
         if permission == True :
             webbrowser.open(searchAdd1)
+        self.saveData()
 
     def onMainWindowMove(self, arg1 = None):
         if (self.userCfgData['featureData']['savedMainWindowPos']['x'] != self.mainWindow.winfo_x() or self.userCfgData['featureData']['savedMainWindowPos']['y'] != self.mainWindow.winfo_y()) and (self.menuPopup == True) :
@@ -822,29 +832,29 @@ class Furry():
                 self.removeCmdWindow.destroy()
         def removeCmdWindow_apply(arg1 = None):
             selection = list(self.removeCmd_cmdList.curselection())
-            print(selection)
+            #print(selection)
             cmdToRemove = []
             cmdRemoveList = []
             for x in selection :
                 toRemove = self.removeCmd_cmdList.get(x)
                 print(toRemove)
                 cmdToRemove.append(self.removeCmd_cmdTable[toRemove])
-                cmdRemoveList.append(str('=>' + toRemove))
-            ans = messagebox.askyesno(self.loadCurrentLang(key = 'messageTitleTips'), self.loadCurrentLang(key = 'menuRemoveCommandMessageRecheck').format(s = '\n'.join(cmdRemoveList)))
-            if ans == True :
-                cmdToRemove.sort(reverse = True)
-                self.shellOutput(('Will remove: ' + str(cmdToRemove)))
-                if len(cmdToRemove) > 0 :
+                cmdRemoveList.append(str('=>' + toRemove))            
+            if len(cmdToRemove) > 0 :
+                ans = messagebox.askyesno(self.loadCurrentLang(key = 'messageTitleTips'), self.loadCurrentLang(key = 'menuRemoveCommandMessageRecheck').format(s = '\n'.join(cmdRemoveList)))
+                if ans == True :
+                    cmdToRemove.sort(reverse = True)
+                    self.shellOutput(('Will remove: ' + str(cmdToRemove)))
                     for y in cmdToRemove :
-                        self.userCfgData['menuListData'].pop(y)
-                else :
-                    messagebox.showinfo(self.loadCurrentLang(key = 'messageTitleTips'), self.loadCurrentLang(key = 'menuRemoveCommandMessageEmpty1'))
-                self.saveUserData()
-                self.menuCmdEditWindowActive = False
-                self.saveUserData()
-                self.removeCmdWindow.destroy()
-                if self.menuPopup == True :
-                    self.showOrHideMenu()
+                        self.userCfgData['menuListData'].pop(y)                                    
+            else :
+                messagebox.showinfo(self.loadCurrentLang(key = 'messageTitleTips'), self.loadCurrentLang(key = 'menuRemoveCommandMessageEmpty1'))
+            self.saveUserData()
+            self.menuCmdEditWindowActive = False
+            self.saveUserData()
+            self.removeCmdWindow.destroy()
+            if self.menuPopup == True :
+                self.showOrHideMenu()
 
         self.removeCmdWindow.geometry('+{x}+{y}'.format(x = int(1/16 * self.popupMenuWindow.winfo_screenwidth()), y = int(1/16 * self.popupMenuWindow.winfo_screenheight())))
         self.removeCmdWindow.config(width = windowWidth, height = windowHeight)
@@ -1116,7 +1126,9 @@ class Furry():
         if time.strftime('%m%d') == '0723' : #Mr.Pan, we miss you! 2011.7.23-2025.7.23
             txt = self.getLang(text = random.choice(["{userName}:\nIt's been {s} years.", "{userName}:\nCRH2-139E!", "{userName}:\nR.I.P. Pan Yiheng", "{userName}:\nMr.Pan is a hero."]), mode = 'text').format(s = int(time.strftime('%Y')) - 2011)
             self.menu_titleLabel.config(text = txt)
-
+        if time.strftime('%m%d') == '0528' : #P0000324's Birthday!
+            txt = self.getLang(text = random.choice(["P0000324:\nYou're {s} now!", "P0000324:\nHappy Birthday!"]), mode = 'text').format(s = int(time.strftime('%Y')) - 2010)
+            self.menu_titleLabel.config(text = txt)
 
         self.listMaxHeight = self.menuHeight - int(8/3 * singleObjectHeight) - 4 * objectMove - 2 * sideMove  - objectMove - 2
         self.listTopY = sideMove + int(4/3 * singleObjectHeight) + 2 * objectMove
@@ -1159,9 +1171,12 @@ class Furry():
                 except :
                     pass
             else :
-                self.menuList.append([tmp1, int(btnHeight)])
+                self.menuList.append([tmp1, int(1 * singleObjectHeight)])
             #del tmp1
             #del btnHeight
+        if len(self.menuList) <= 0 :
+            self.menuList.append([Button(self.popupMenuWindow, text = self.loadCurrentLang(key = 'menuAddCommandBtnEmptyList'), command = self.menu_appendCmd), int(singleObjectHeight)])
+
         self.menu_appendCommandBtn = Button(self.popupMenuWindow, text = self.addSign(text = self.loadCurrentLang(key = 'menuAddCommandBtn'), sign = 'add'), command = self.menu_appendCmd)
         self.menu_removeCommandBtn = Button(self.popupMenuWindow, text = self.addSign(text = self.loadCurrentLang(key = 'menuRemoveCommandBtn'), sign = 'remove'), command = self.menu_removeCmd)
 
