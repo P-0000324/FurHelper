@@ -1,11 +1,9 @@
 """
 --==P0000324 Coding==--
-FurHelper 0.1.0042
-26.05.09
+FurHelper 0.1.0044
+26.05.30
 ========
-1)Appended a button that shows when the menu list is empty.
-2)The remove command button window will no longer ask the user for permission when user selects nothing now.
-3)...?
+1)Changed the way to prevent multply.
 """
 
 from tkinter import *
@@ -23,14 +21,18 @@ import platform
 import time
 import traceback
 import webbrowser
+import tempfile
+import socket
+import sys
+import atexit
 
 appSettings = {
     "appName" : "FurHelper",
     "verName" : "GoldEarBay",
-    "ver" : "0.1.0042",
+    "ver" : "0.1.0044",
     "versionTag" : "Beta",
     "releaseTips" : "A furry that helps you!",
-    "relDate" : "26.05.09",
+    "relDate" : "26.05.30",
     "firstRelDate" : "25.06.24",
     "firstRelTime" : "11:02",
     "betaTags" : [
@@ -157,17 +159,27 @@ class Furry():
             with open(str(self.appPath + '/' + self.appSettings['advanced']['logDir'] + '/' + self.appSettings['advanced']['logFileNameTemplate'].format(date = time.strftime('%y%m%d'), time = time.strftime('%H%M%S'), appendix = '.log')), 'a', encoding = 'utf-8') as fe :
                 fe.write('{dttm}{s}\n'.format(dttm = dttm, s = text))
 
-    def applicationClock(self, arg1 = None, tickDelay = 5000):
+    def applicationClock(self, arg1 = None, tickDelay = 500):
         #print('Clock!')
         #Append code here.
-        #self.mainWindow.attributes('-topmost', 'true')
-        #self.mainWindow.attributes('-topmost', 'false')
-        #if self.menuPopup == True :
-        #    self.popupMenuWindow.attributes('-topmost', 'true')
-        #    self.popupMenuWindow.attributes('-topmost', 'false')
-
-        #self.mainWindow.after(tickDelay, self.applicationClock)
-        pass
+        #if self.appSettings['advanced']['enableApplicationLock'] == True :                                                     #The old function to prevent multiply
+        #    lockOutOfDate = False
+        #    try :
+        #        with open(self.appLockFile, 'r', encoding = 'utf-8', errors = 'ignore') as lockF :
+        #            lockLast = int(float(lockF.read()))
+        #            timeNow = int(time.time())
+        #            #print(timeNow - lockLast)
+        #            if (timeNow - lockLast >= (self.appSettings['advanced']['applicationLockDelay'] - 1)) or (timeNow - lockLast < 0) :
+        #                #print('out of date')
+        #                lockOutOfDate = True
+        #    except :
+        #        #print('err')
+        #        lockOutOfDate = True
+        #    if lockOutOfDate == True :
+        #        with open(self.appLockFile, 'w', encoding = 'utf-8', errors = 'ignore') as lockF :
+        #            lockF.write(str(time.time()))
+        self.mainWindow.after(tickDelay, self.applicationClock)
+        #pass
 
     def addSign(self, text = '', sign = 'none'):
         signs = {
@@ -258,7 +270,7 @@ class Furry():
     def userGenerator(self, userPathTitle = "DEBUG", cfgFile = 'userConfigs.json', userName = 'DEBUG', userSearchAddress = 'http://localhost', userRootUser = False, userHideFurryWhenStartup = False, userUACLevel = 3):
         self.shellOutput('userGenerator Launched.')
         def userIDGenerator(len_ = random.randint(64, 324)):
-            dic_ = list('1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZйцукенгшщзфывапролджэхъячсмитьбюЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ_+-=`;,./!@#$%^&*|¡¢£¤¥¦¨©ª«¬­®¯°±²³´µ¶·')
+            dic_ = list('1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_')
             userID = []
             for x in range(len_):
                 userID.append(random.choice(dic_))
@@ -1238,10 +1250,13 @@ class Furry():
             self.active = False
             self.hideWindow()
 
-    def quitFurry(self, saveData = True):
+    def quitFurry(self, saveData = True, resetPerm = True):
         if saveData == True :
             self.saveData()
         self.shellOutput('Quitting furry...\n') #Leave a empty line so that the log can be more readable
+        #if resetPerm == True and self.appSettings['advanced']['enableApplicationLock'] == True :                                  #The old function to prevent multiply
+        #    with open(self.appLockFile, 'w', encoding = 'utf-8', errors = 'ignore') as lockF :
+        #        lockF.write('-1')
         try :
             self.popupMenuWindow.destroy() #Close the popup menu window first
         except :
@@ -1254,6 +1269,7 @@ class Furry():
             self.furryStray.stop()
         except :
             pass
+        self.furryToPreventMultiple.close()
         self.mainWindow.quit()
         quit()
 
@@ -1399,7 +1415,7 @@ class Furry():
         self.noteBoardWindow.withdraw()
         self.noteBoardWindowSides = {'x' : 2, 'y' : 2}
 
-        self.strayMenu = (pystray.MenuItem(self.getLang(key = 'furryInfo', fromDic = self.currentLangData), self.aboutApp),
+        self.strayMenu = [pystray.MenuItem(self.getLang(key = 'furryInfo', fromDic = self.currentLangData), self.aboutApp),
                           pystray.Menu.SEPARATOR,
                           pystray.Menu.SEPARATOR,
                           pystray.MenuItem(self.getLang(key = 'showOrHide', fromDic = self.currentLangData), self.showOrHide),
@@ -1408,7 +1424,15 @@ class Furry():
                           #pystray.MenuItem(self.getLang(key = 'appSettings', fromDic = self.currentLangData), self.appSettings_menuLauncher),
                           #pystray.MenuItem(self.getLang(key = 'appHelp', fromDic = self.currentLangData), self.underConstruction),
                           pystray.MenuItem(self.getLang(key = 'quit', fromDic = self.currentLangData), self.quitApp)
-                          )
+                          ]
+        self.strayMenu_Hidden = [pystray.MenuItem(self.getLang(key = 'appHelp', fromDic = self.currentLangData), self.underConstruction),
+                                 pystray.MenuItem(self.getLang(key = 'appSettings', fromDic = self.currentLangData), self.appSettings_menuLauncher)
+                                 ]
+        self.strayMenu_insertPos = 6
+        if self.appSettings['advanced']['enableSuperSecret'] == True :
+            for x in self.strayMenu_Hidden :
+                self.strayMenu.insert(self.strayMenu_insertPos, x)
+                self.strayMenu_insertPos += 1
         self.furryStrayIconImage = Image.open((self.appPath + '/' + self.appSettings['application']['iconDir'] + '/' + self.appSettings['application']['strayIcon']))
         self.furryStray = pystray.Icon(appSettings['appName'], self.furryStrayIconImage, self.getLang(key = 'strayInfo', fromDic = self.currentLangData), self.strayMenu)
 
@@ -1504,6 +1528,34 @@ class Furry():
             self.menuCmdEditWindowActive = False
             self.appSettingsWindowActive = False
             #self.tick1 = 0
+
+            #if self.appSettings['advanced']['enableApplicationLock'] == True :                                           #The old function to prevent multiply
+            #    self.appLockFile = str(str(tempfile.gettempdir()) + '/furHelperApplicationLock.tmp')
+            #    self.appLaunchPermission = True
+            #    try :
+            #        with open(self.appLockFile, 'r', encoding = 'utf-8', errors = 'ignore') as lockF :
+            #            timeLast = float(lockF.read())
+            #            timeNow = time.time()
+            #            if (timeNow - timeLast) <= self.appSettings['advanced']['applicationLockDelay'] :
+            #                self.appLaunchPermission = False
+            #    except :
+            #        pass
+            #    with open(self.appLockFile, 'w', encoding = 'utf-8', errors = 'ignore') as lockF :
+            #        lockF.write(str(time.time()))
+            #print(self.appPath)
+            if self.appSettings['advanced']['enableApplicationLock'] == True :                                            #Lock the port in order to prevent multiply
+                try :
+                    try :
+                        testPort = int(self.appSettings['advanced']['applicationLockPort'])
+                    except :
+                        self.appSettings['advanced']['applicationLockPort'] = 5033                                        #If the port numbet is not valid, reset it
+                    self.furryToPreventMultiple = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    #self.furryToPreventMultiple.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                    self.furryToPreventMultiple.bind(('localhost', self.appSettings['advanced']['applicationLockPort']))
+                    atexit.register(self.furryToPreventMultiple.close)                                                    #To prevent some bugs when closing the app forcely
+                    self.appLaunchPermission = True                                                                       #Give application launch permission
+                except :
+                    self.appLaunchPermission = False
         except Exception as errData :
             messagebox.showerror('ERROR', 'Failed to load data. The application will be closed.\nMake sure the asset files are available and the assets are valid, then launch the application again.\nException Data:\n{data}'.format(data = '\n'.join([str(errData.__traceback__), str(traceback.extract_tb(errData.__traceback__)), str(type(errData))])))
             quit()
@@ -1512,6 +1564,9 @@ class Furry():
         self.shellOutput('Application Launched.')
 
     def startFurry(self):
+        if self.appLaunchPermission == False :
+            messagebox.showerror(self.loadCurrentLang(key = 'messageTitleError'), self.loadCurrentLang(key = 'messageErrorAlreadyRunning').format(s = self.appSettings['advanced']['applicationLockPort']))
+            self.quitFurry(resetPerm = False)
         self.showWindow()
         threading.Thread(target = self.furryStray.run, daemon = True).start()
         self.applicationClock()
