@@ -1,0 +1,35 @@
+{
+  "standardData": {
+    "name": "Default Furry",
+    "relDate": "25.06.24",
+    "developers": [
+      "P0000324"
+    ],
+    "license": "Copyright P0000324",
+    "drawBg": false,
+    "imagePath": "images",
+    "images": {
+      "normal": "furry.png",
+      "bg": "bg.png"
+    },
+    "normalImage": "normal",
+    "tag": "furry",
+    "windowTitle": "FurHelper",
+    "customizedLangPath": "lang",
+    "customizedLangs": {
+      "en": "en.json"
+    }
+  },
+  "drawData": {
+    "bg": {
+      "x": 0,
+      "y": 0,
+      "anchor": "nw"
+    },
+    "furry": {
+      "x": 0,
+      "y": 0,
+      "anchor": "nw"
+    }
+  }
+}

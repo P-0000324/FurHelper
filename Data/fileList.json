@@ -1,0 +1,6 @@
+{
+  "application": {
+    "dir": "FurHelper",
+    "mainCfgFile": "configs/appConfig.json"
+  }
+}
