@@ -1,0 +1,60 @@
+{
+  "application": {
+    "langDir": "lang",
+    "langCfgFile": "en.json",
+    "logDir": "logs",
+    "iconDir": "icons",
+    "windowIcon": "window.ico",
+    "strayIcon": "tray.png",
+    "normalTitle": "FurHelper"
+  },
+  "advanced": {
+    "enableSuperSecret": false,
+    "forceApplicationLangData": false,
+    "writeToLog": false,
+    "logDir": "logs",
+    "logFileNameTemplate": "app_{date}_{time}{appendix}",
+    "transparentColor": "#FFFFFF",
+    "rootAllowed": false,
+    "windowPosMove": [
+      40,
+      95
+    ],
+    "enableApplicationLock": false,
+    "applicationLockPort": 5033
+  },
+  "user": {
+    "userCfgDir": "users",
+    "normalUser": "default",
+    "userList": {
+      "default": {
+        "dir": "default",
+        "mainCfgFile": "userConfigs.json"
+      }
+    }
+  },
+  "furry": {
+    "furryCfgDir": "furry",
+    "furryList": {
+      "default": {
+        "dir": "default",
+        "mainCfgFile": "furryConfigs.json"
+      }
+    }
+  },
+  "appName": "FurHelper",
+  "verName": "GoldEarBay",
+  "ver": "0.1.0042",
+  "versionTag": "Beta",
+  "releaseTips": "A furry that helps you!",
+  "relDate": "26.05.30",
+  "firstRelDate": "25.06.24",
+  "firstRelTime": "11:02",
+  "betaTags": [
+    "Beta"
+  ],
+  "developers": [
+    "P0000324"
+  ],
+  "license": "Copyright (C) 2025, 2026 P0000324"
+}
