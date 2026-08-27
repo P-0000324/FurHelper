@@ -149,7 +149,7 @@ class FurryBase:
                                  pystray.MenuItem(self.getLang(key = 'appSettings', fromDic = self.currentLangData), self.appSettings_menuLauncher)
                                  ]
         self.strayMenu_insertPos = 6
-        if self.appSettings['advanced']['enableSuperSecret'] == True :
+        if (self.appSettings['advanced']['enableSuperSecret'] == True) or (self.appSettings['advanced']['debugMode'] == True) :
             for x in self.strayMenu_Hidden :
                 self.strayMenu.insert(self.strayMenu_insertPos, x)
                 self.strayMenu_insertPos += 1
@@ -197,7 +197,7 @@ class FurryBase:
             self.rightMenu.add_command(label = self.getLang(key = 'furryInfo', fromDic = self.currentLangData), command = self.aboutApp)
             self.rightMenu.add_command(label = self.addSign(text = self.loadCurrentLang(key = 'showOrHide'), sign = 'enter'), command = self.showOrHide)
             self.rightMenu.add_command(label = self.addSign(text = self.getLang(key = 'toolMenu', fromDic = self.currentLangData), sign = 'enter'), command = self.showOrHideMenu)
-            if self.appSettings['advanced']['enableSuperSecret'] == True :
+            if (self.appSettings['advanced']['enableSuperSecret'] == True) or (self.appSettings['advanced']['debugMode'] == True) :
                 self.rightMenu.add_command(label = self.addSign(text = self.getLang(key = 'appSettings', fromDic = self.currentLangData), sign = 'enter'), command = self.appSettings_menuLauncher)
                 self.rightMenu.add_command(label = self.addSign(text = self.getLang(key = 'appHelp', fromDic = self.currentLangData), sign = 'help'), command = self.underConstruction)
             self.rightMenu.add_command(label = self.addSign(text = self.getLang(key = 'quit', fromDic = self.currentLangData), sign = 'enter'), command = self.quitApp)
