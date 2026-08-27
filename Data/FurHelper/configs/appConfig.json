@@ -9,20 +9,21 @@
     "normalTitle": "FurHelper"
   },
   "advanced": {
+    "debugMode" : false,
+    "transparentColor": "#114514",
+    "writeToLog": true,
+    "logDir": "/log/",
+    "logFileNameTemplate": "ApplicationLog_{date}{appendix}",
     "enableSuperSecret": false,
+    "windowPosMove": [ 40, 95 ],
     "forceApplicationLangData": false,
-    "writeToLog": false,
-    "logDir": "logs",
-    "logFileNameTemplate": "app_{date}_{time}{appendix}",
-    "transparentColor": "#FFFFFF",
+    "userConfigTemplatePath": "/__userInit__/",
+    "enableApplicationLock": true,
+    "applicationLockDelay": 2,
+    "applicationLockPort": 5033,
     "rootAllowed": false,
-    "windowPosMove": [
-      40,
-      95
-    ],
-    "enableApplicationLock": false,
-    "applicationLockPort": 5033
-  },
+    "applicationClockDelay": 2000
+  }
   "user": {
     "userCfgDir": "users",
     "normalUser": "default",
